@@ -2,7 +2,17 @@
 
 This is the **non-interactive** setup guide. If you'd rather have a Claude Code skill walk you through it step by step, use `/news-digest-setup` after you clone the repo.
 
-Estimated time: **30–45 minutes**, mostly waiting for browser tabs and BotFather prompts.
+**Estimated time: 30–45 minutes** — mostly waiting on browser tabs and BotFather prompts; the actual scripted work is ~10 minutes.
+
+## At a glance — which steps are required vs optional
+
+| Steps | Time | Required? |
+|---|---|---|
+| **1–6**: prerequisites · clone · venv · Telegram bot · `.env` | ~15 min | ✅ Required |
+| **7–8**: FT cookie · WSJ cookie | ~5 min each | ⚪ Optional — skip if no subscription. Brief still works using just Reuters/CNBC, just shallower. |
+| **9–14**: customise prompt · Claude Code permissions · trust folder · pmset wake · scheduled task · Run Now test | ~15 min | ✅ Required |
+
+If you have neither FT nor WSJ subscriptions: skip 7–8 entirely, do the rest. ~25 min total.
 
 ---
 

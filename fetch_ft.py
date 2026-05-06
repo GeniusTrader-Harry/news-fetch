@@ -2,11 +2,26 @@
 """Fetch FT article(s) by URL, bypass Cloudflare via curl_cffi Chrome impersonation,
 extract structured content from JSON-LD, output as markdown to stdout.
 
+Strategy:
+  1. curl_cffi with `impersonate="chrome131"` mimics Chrome's TLS handshake.
+     Vanilla `curl` returns HTTP 403 from Cloudflare bot detection;
+     curl_cffi (libcurl-impersonate) passes the TLS fingerprint check.
+  2. Pass the user's exported FT session cookies (./ft_cookie.txt)
+     to authenticate past the paywall.
+  3. Parse the response HTML for `<script type="application/ld+json">` blocks
+     and pick the one with `@type: "NewsArticle"` — FT embeds the full
+     `articleBody` in JSON-LD, cleaner than parsing rendered HTML.
+  4. Render headline / byline / date / dek / body / source link as markdown.
+
 Usage:
   fetch_ft.py URL [URL ...]
 
-Reads cookies from ./ft_cookie.txt (next to this script). If a fetch returns a
-login/paywall page, prints an error and continues with remaining URLs.
+Reads cookies from ./ft_cookie.txt (next to this script, gitignored).
+If a fetch returns a login/paywall page (likely cookie expiry), prints an
+error and continues with remaining URLs — never fabricates content.
+
+Cookie rotation: every 2–4 weeks, re-export from Chrome via Cookie-Editor
+extension → Export as Header String → overwrite ft_cookie.txt.
 """
 import json
 import re

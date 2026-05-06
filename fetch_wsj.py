@@ -3,11 +3,30 @@
 impersonation, extract metadata from JSON-LD and body from <p data-type="paragraph">
 tags, output as markdown to stdout.
 
+Strategy:
+  1. curl_cffi with `impersonate="chrome131"` passes WSJ's edge bot-detection
+     (Cloudflare + Datadome). Vanilla `curl` returns 403; curl_cffi's TLS
+     fingerprint matches a real Chrome browser.
+  2. Pass the user's exported WSJ session cookies (./wsj_cookie.txt)
+     to authenticate past the paywall.
+  3. Hybrid extraction (WSJ doesn't put body in JSON-LD like FT does):
+     - Metadata (headline, description, author, datePublished) → JSON-LD
+       NewsArticle block.
+     - Body → regex over `<p data-type="paragraph">` tags AFTER stripping
+       `<style>` blocks. WSJ embeds CSS-in-JS for styled inline links inside
+       paragraphs, which leaks into the body if not stripped first.
+  4. Filter out short/empty paragraphs (< 30 chars), strip remaining HTML
+     tags, unescape entities, join with double-newlines.
+
 Usage:
   fetch_wsj.py URL [URL ...]
 
-Reads cookies from ./wsj_cookie.txt (next to this script). If a fetch returns a
-login/paywall page, prints an error and continues with remaining URLs.
+Reads cookies from ./wsj_cookie.txt (next to this script, gitignored).
+If a fetch returns a login/bot-check page (likely cookie expiry), prints an
+error and continues with remaining URLs — never fabricates content.
+
+Cookie rotation: every 2–4 weeks, re-export from Chrome via Cookie-Editor
+extension → Export as Header String → overwrite wsj_cookie.txt.
 """
 import html
 import json

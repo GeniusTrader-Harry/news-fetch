@@ -2,7 +2,20 @@
 
 The published `routine-prompt.md` is **opinionated** — it's set up for finance / sales-and-trading / equity-research / asset-management recruiting prep. The opinionated bits are the worked example. **All of them are meant to be tuned for your beat.**
 
-This guide tells you what to swap and how the moving parts interact.
+## TL;DR — "I want to change X, edit Y"
+
+| Want to... | Edit | Search for |
+|---|---|---|
+| Change who the brief is "for" | `routine-prompt.md` | line 1 — `<USER_NAME>` and the framing after it |
+| Make it US-only / Asia-led / Europe-only | `routine-prompt.md` | the **Geography weighting** bullet |
+| Change recurring-narrative tags | `routine-prompt.md` | the `⏣` block under **Theme tags** |
+| Make brief shorter / longer | `routine-prompt.md` | section counts: `Macro & rates (2–3 stories)` etc. |
+| Add a new paywalled outlet | new `fetch_X.py` + `routine-prompt.md` | mirror `fetch_wsj.py` pattern |
+| Drop a source | `routine-prompt.md` + `~/.claude/settings.json` | remove from Step 1 + remove `WebFetch(domain:...)` line |
+| Change the view-forming-question style | `routine-prompt.md` | `*🎯 Today's view-forming question*` block |
+| Change Telegram delivery time | `~/.claude/scheduled-tasks/news-digest-daily-brief/SKILL.md` | the `cronExpression` in scheduled-tasks.json (or just ask Claude: "change news-digest to fire at 8am") |
+
+This guide tells you the *why* behind each option and how the moving parts interact.
 
 ---
 
