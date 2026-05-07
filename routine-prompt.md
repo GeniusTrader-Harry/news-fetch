@@ -18,15 +18,11 @@ Today's date: run `date "+%A, %d %B %Y"` first, and use that as the dated header
 
 ## Step 1 — Gather news (parallel `Bash` + `curl`, in ONE message)
 
-**Parallelism is required.** Issue ALL source fetches as parallel `Bash` tool calls in a **single message** — Claude Code's Bash tool runs concurrently when multiple invocations appear in one turn, and serialises across turns. Don't fetch FT, WSJ, Reuters, CNBC in separate turns; you'll double the runtime. One turn, many parallel `curl` calls.
+**Parallelism is required.** Issue ALL source fetches as parallel `Bash` tool calls in a **single message** — Claude Code's Bash tool runs concurrently when multiple invocations appear in one turn, and serialises across turns. Don't fetch FT, WSJ, CNBC in separate turns; you'll double the runtime. One turn, many parallel `curl` calls.
 
 Pull TODAY'S top stories (and overnight if pre-market) from these sources:
 
-- **Reuters** — fetch each section page with `curl -sSL --retry 2 --retry-delay 1 -A "Mozilla/5.0" "<URL>"`:
-  - `https://www.reuters.com/markets/`
-  - `https://www.reuters.com/business/finance/`
-  - `https://www.reuters.com/markets/deals/`
-- **CNBC** — same `curl -sSL --retry 2 --retry-delay 1 -A "Mozilla/5.0" "<URL>"` pattern:
+- **CNBC** — fetch each section page with `curl -sSL --retry 2 --retry-delay 1 -A "Mozilla/5.0" "<URL>"`:
   - `https://www.cnbc.com/markets/`
   - `https://www.cnbc.com/deals-and-ipos/`
 - **Central bank press releases** (only if there's an FOMC / BoE / ECB / BoJ event today or yesterday): Fed `federalreserve.gov/newsevents/pressreleases.htm`, BoE `bankofengland.co.uk/news`, ECB `ecb.europa.eu/press/pr/date/...`
@@ -43,7 +39,7 @@ Use WebSearch ONLY for breaking-news type queries (e.g. "FTSE 100 today", "M&A a
 curl -sSL --retry 2 --retry-delay 1 -A "Mozilla/5.0" "<URL>"
 ```
 
-This applies to: FT RSS feeds, the Reuters/CNBC homepage and section pages, and any other XML/HTML source page. WebFetch is fine for individual article URLs from outlets without aggressive anti-bot (Reuters articles, CNBC articles), but is unreliable for index pages.
+This applies to: FT RSS feeds, the CNBC homepage and section pages, and any other XML/HTML source page. WebFetch is fine for individual article URLs from outlets without aggressive anti-bot (CNBC articles, central-bank press pages), but is unreliable for index pages.
 
 **On transient failures**: if a curl returns non-200, empty body, or times out, retry **once more** with the same flags (the `--retry 2` already retries network-level errors twice automatically; manual re-invocation is for HTTP-level failures). Only declare a source "down" after a manual retry also fails — most failures are 30-second hiccups, not real outages.
 
@@ -105,17 +101,17 @@ If `discover_wsj.sh` itself fails (no URLs returned, or HTTP error), the WSJ coo
 
 - **FT is the primary, most credible source.** Treat its editorial selection as the strongest signal of what matters today. When deciding which stories to include in Macro / Equities / M&A, lean toward stories FT covers in depth (not just bare news flashes). Cite FT whenever you fetched its body via `fetch_ft.sh` — never cite an FT URL whose body you didn't actually fetch.
 - **WSJ is a peer of FT in credibility — strongest on US single names, M&A scoops, and corporate stories.** Use WSJ as a peer source via `fetch_wsj.sh`. Cite WSJ whenever you fetched its body — never cite a WSJ URL whose body you didn't actually fetch.
-- **Reuters is the breaking-facts backstop.** When FT/WSJ and Reuters cover the same story and you've fetched all of them:
+- **When FT and WSJ both cover the same story and you've fetched both bodies**:
   - **Cite FT** for analysis pieces, Lex notes, UK/European stories, M&A strategic rationale, and global macro framing.
   - **Cite WSJ** for US single-name deep dives, US corporate scoops, US M&A advisers, US macro/policy reporting where WSJ has the lead.
-  - **Cite Reuters** when the story is breaking news and Reuters has the cleaner first-source account (numbers, official quotes), or when FT/WSJ have only thin headline relays.
-  - When in doubt and multiple are decent, prefer FT > WSJ > Reuters.
+  - When in doubt and both are decent, prefer FT > WSJ.
   - For balanced coverage across geographies: FT tends to lead UK/EU; WSJ tends to lead US — use this naturally, don't force.
-- **CNBC is an aggregator backstop** — use it only when none of FT/WSJ/Reuters has the story, and prefer the originals over a CNBC repackage of the same wire content.
-- **FT, WSJ, and Reuters URLs only ever appear when their body was fetched.** No FT/WSJ story off the RSS dek alone; no Reuters story off a search snippet.
+- **CNBC is an aggregator backstop** — use it only when neither FT nor WSJ has the story. CNBC has good coverage of US single names, central-bank events, and earnings reactions. Cite the original wire when CNBC is just repackaging it.
+- **Central-bank press pages** (Fed/BoE/ECB/BoJ) — use directly when an official statement, speech, or release is the primary news.
+- **FT, WSJ, and CNBC URLs only ever appear when their body was fetched.** No FT/WSJ story off the RSS dek alone; no CNBC story off a search snippet.
 - **Skip op-eds, "10 stocks to buy" listicles, and "stock movers" generic recap pages**. Real news only.
 - **Skip anything older than 24 hours** unless it's a still-developing story.
-- **Do NOT cite Bloomberg, Barron's, The Economist** or other paywalled outlets whose body you cannot fetch. Headlines from search snippets are NOT a substitute for reading the article — they invite hallucinated content.
+- **Do NOT cite Reuters, Bloomberg, Barron's, or The Economist.** Reuters and Bloomberg both have aggressive anti-bot protection (DataDome + PerimeterX respectively) that defeats our fetcher infrastructure even with valid cookies. Don't try them; the agent gets nothing useful back. Other paywalled outlets without local fetchers fall in the same bucket — search snippets are not a substitute for reading the article.
 - **Geography weighting** (CUSTOMISE THIS for your beat): US-anchored, UK-weighted. The US drives global market narrative — give it the largest share. UK gets a guaranteed presence (1+ story in macro, 1+ in equities) because that's where the reader recruits. Europe (continental) appears when material; Asia only when the day's action genuinely demands it. Target rough share across the whole brief: **~50% US · ~25% UK · ~15% EU · ~10% Asia**. Apply this to the brief as a whole, regardless of which source covered which story.
 
 ## Step 2 — Synthesise the briefing
@@ -175,9 +171,8 @@ Pick the **first source-type that's genuinely strong today**, in this priority o
 |---|---|---|
 | 1 | **FT Big Read, Lex, Alphaville, or longer FT analysis** (via `fetch_ft.sh`) | Default first choice — FT's analytical writing is the gold standard for desk-relevant depth. |
 | 2 | **A sitting Fed/BoE/ECB official's speech or press conference today** | Only when substantive (policy-path hints, dissent rationale, financial-stability commentary), not boilerplate. |
-| 3 | **Reuters Breakingviews column** | Sharp, contrarian, opinionated takes on a topic in today's brief. |
-| 4 | **IMF / BIS / OECD / NBER working paper or speech** | Only when directly relevant to today's themes — institutional-economist angle. |
-| 5 | **Sell-side public commentary** (GS / JPM / BlackRock published research excerpts visible via Reuters/CNBC) | Rare but valuable when a material call has been published. |
+| 3 | **IMF / BIS / OECD / NBER working paper or speech** | Only when directly relevant to today's themes — institutional-economist angle. |
+| 4 | **Sell-side public commentary** (GS / JPM / BlackRock published research excerpts visible via CNBC or central-bank pages) | Rare but valuable when a material call has been published. |
 
 If **nothing today passes all four tests**, do NOT force a pick. Render the section as:
 

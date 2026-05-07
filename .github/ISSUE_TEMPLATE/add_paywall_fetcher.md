@@ -21,7 +21,7 @@ Try `curl_cffi` against an article URL with your cookies. What happens?
 
 - [ ] HTTP 200, full article body visible — `curl_cffi` works (FT-tier difficulty)
 - [ ] HTTP 200, but body needs unusual extraction (no JSON-LD, no clean paragraph tags) — solvable, just custom regex
-- [ ] HTTP 403, "Are you a robot?" page — PerimeterX or similar, won't work via curl_cffi (Bloomberg-tier; needs Playwright)
+- [ ] HTTP 401/403, "Are you a robot?" or "Please enable JS" page — PerimeterX or DataDome, won't work via curl_cffi (Bloomberg/Reuters-tier; needs Playwright)
 - [ ] Haven't tested yet
 
 ## What body extraction looks like

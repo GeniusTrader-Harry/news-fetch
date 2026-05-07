@@ -130,7 +130,7 @@ Just keep the per-story format consistent: `*N. [⏣ Theme] {Headline}*` + summa
 
 ## 5. Source list
 
-The published template uses: FT (primary) · WSJ (peer) · Reuters · CNBC · central banks · WebSearch.
+The published template uses: FT (primary) · WSJ (peer) · CNBC · central banks · WebSearch. Reuters and Bloomberg are intentionally excluded — both use anti-bot protection (DataDome / PerimeterX) that defeats `curl_cffi`.
 
 To add a source, two things:
 
@@ -145,7 +145,7 @@ To add a source, two things:
 3. Find where the body lives in the HTML (JSON-LD `articleBody`? `<article>` tags? `<p data-type="paragraph">`? other?)
 4. Copy `fetch_wsj.py` as a starting template and adapt
 
-If the publisher uses **PerimeterX** (you'll see "Are you a robot?" 403s), `curl_cffi` won't work — you'd need Playwright with a logged-in profile. Bloomberg is the canonical example.
+If the publisher uses **PerimeterX** ("Are you a robot?" 403s) or **DataDome** ("Please enable JS" 401s), `curl_cffi` won't work — you'd need Playwright with a logged-in profile. Bloomberg uses PerimeterX; Reuters uses DataDome. Both are blocked in this template by design.
 
 To remove a source, delete its line from Step 1 and any references in the Quality bar.
 

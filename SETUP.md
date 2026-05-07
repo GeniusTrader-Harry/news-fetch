@@ -9,7 +9,7 @@ This is the **non-interactive** setup guide. If you'd rather have a Claude Code 
 | Steps | Time | Required? |
 |---|---|---|
 | **1–6**: prerequisites · clone · venv · Telegram bot · `.env` | ~15 min | ✅ Required |
-| **7–8**: FT cookie · WSJ cookie | ~5 min each | ⚪ Optional — skip if no subscription. Brief still works using just Reuters/CNBC, just shallower. |
+| **7–8**: FT cookie · WSJ cookie | ~5 min each | ⚪ Optional — skip if no subscription. Brief still works using just CNBC + central banks + WebSearch, but loses most of its analytical depth (FT and WSJ are the primary tier). |
 | **9–14**: customise prompt · Claude Code permissions · trust folder · pmset wake · scheduled task · Run Now test | ~15 min | ✅ Required |
 
 If you have neither FT nor WSJ subscriptions: skip 7–8 entirely, do the rest. ~25 min total.
@@ -22,7 +22,7 @@ If you have neither FT nor WSJ subscriptions: skip 7–8 entirely, do the rest. 
 - [Claude Code](https://claude.com/claude-code) 2.x installed and signed in
 - Python 3.9+ (`python3 --version` to check)
 - A Telegram account
-- Optional but recommended: an FT subscription (personal, or via uni / library) and a WSJ subscription. Without these, the brief still works using only Reuters/CNBC/central-bank sources — just shallower.
+- Optional but recommended: an FT subscription (personal, or via uni / library) and a WSJ subscription. Without these, the brief falls back to CNBC + central-bank sources only — usable but much shallower.
 
 ## 1. Clone the repo
 
@@ -91,7 +91,7 @@ You should receive the message in your Telegram chat with the bot. If not, doubl
 
 ## 6. (Optional) FT cookie setup
 
-Skip this if you don't have an FT subscription. The brief still works without FT — just falls back to Reuters/CNBC.
+Skip this if you don't have an FT subscription. The brief still works without FT — just falls back to CNBC + central banks (much shallower).
 
 1. In Chrome, install the **Cookie-Editor** extension ([Chrome Web Store](https://chromewebstore.google.com/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm)) and pin it to the toolbar.
 2. Log into **https://www.ft.com/** (Imperial / personal sub / whatever you have).
@@ -148,8 +148,6 @@ Edit `~/.claude/settings.json`. If `permissions.allow` doesn't exist, create it.
   "permissions": {
     "allow": [
       "WebSearch",
-      "WebFetch(domain:reuters.com)",
-      "WebFetch(domain:www.reuters.com)",
       "WebFetch(domain:www.cnbc.com)",
       "WebFetch(domain:cnbc.com)",
       "WebFetch(domain:federalreserve.gov)",
@@ -291,14 +289,16 @@ See [CUSTOMISATION.md](CUSTOMISATION.md) for the editing guide.
 
 ## Notes / FAQ
 
-### Bloomberg
+### Reuters and Bloomberg are excluded
 
-If you have a Bloomberg subscription (e.g. via uni), you might wonder why this routine doesn't pull from Bloomberg. **Bloomberg uses PerimeterX bot-protection that requires JavaScript challenge solving** — `curl_cffi` (which works for FT and WSJ) gets HTTP 403 "Are you a robot?" regardless of your cookies. Realistic options:
+Both Reuters and Bloomberg use aggressive anti-bot protection — Reuters runs **DataDome**, Bloomberg runs **PerimeterX**. Both require JavaScript challenge solving to mint a valid session cookie, and `curl_cffi` (which works for FT and WSJ) gets HTTP 401 / 403 regardless of your subscription cookies.
 
-- **Skip Bloomberg from automated brief** (current default) and read it directly in your browser
-- **Build a Playwright-based fetcher** with a dedicated logged-in Chrome profile (~60–90 min one-off setup; not currently included in this repo)
+Even with a valid Reuters or Bloomberg subscription, you can't bypass this with our infrastructure. Realistic options if you really want them:
 
-If you build a Playwright fetcher, PRs welcome.
+- **Skip both from the automated brief** (current default) and read them directly in your browser
+- **Build a Playwright-based fetcher** with a dedicated logged-in Chrome profile per outlet (~60–90 min one-off setup each; not included in this repo)
+
+If you build a Playwright fetcher for either, PRs welcome.
 
 ### Cookie rotation
 

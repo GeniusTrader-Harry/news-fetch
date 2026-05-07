@@ -15,7 +15,7 @@
 Most "AI news digest" tools either (a) regurgitate Reddit/Twitter, or (b) summarise headlines you've already seen, badly. This routine flips it:
 
 - **Subscriber-grade primary sources** — full FT + WSJ article bodies via [`curl_cffi`](https://github.com/lexiforest/curl_cffi) Chrome-131 TLS impersonation. Not headline scraping.
-- **Explicit editorial rules** — sourcing priority FT > WSJ > Reuters; no claim without a primary source; cite-what-you-fetched, never invented links.
+- **Explicit editorial rules** — sourcing priority FT > WSJ; no claim without a primary source; cite-what-you-fetched, never invented links.
 - **Theme tagging for cross-day continuity** — every story gets a `[⏣ Theme]` tag (e.g. `⏣ AI capex`, `⏣ Term premium`, `⏣ UK fiscal`). Same theme = same tag, every day. After a month you absorb the dominant narratives reflexively.
 - **A view-forming question every day** — one controversial question forced by today's stories, designed to make you actually take a position.
 
@@ -67,7 +67,7 @@ flowchart TD
     A[cron 11:08 daily] --> B[Claude Code reads<br/>routine-prompt.md]
     B --> C[FT RSS feeds<br/>triage]
     B --> D[WSJ RSS feeds<br/>triage]
-    B --> E[Reuters · CNBC ·<br/>central banks]
+    B --> E[CNBC ·<br/>central banks]
     C --> F[fetch_ft.sh<br/>curl_cffi + cookie]
     D --> G[fetch_wsj.sh<br/>curl_cffi + cookie]
     E --> H[Direct WebFetch]
@@ -79,7 +79,7 @@ flowchart TD
     J --> L[📱 Telegram]
 ```
 
-**Sources are tiered**: FT (primary, full-body) · WSJ (peer, full-body) · Reuters (breaking-facts backstop) · CNBC + central banks (aggregator/event-only). See [SETUP.md](SETUP.md) for limits and source-specific notes.
+**Sources are tiered**: FT (primary, full-body) · WSJ (peer, full-body) · CNBC + central banks (aggregator/event-only). Reuters and Bloomberg are intentionally excluded — both use aggressive anti-bot protection (DataDome / PerimeterX) that defeats `curl_cffi` even with valid cookies; only a real-browser approach (Playwright) would work. See [SETUP.md](SETUP.md) for source-specific notes.
 
 ## Install
 
